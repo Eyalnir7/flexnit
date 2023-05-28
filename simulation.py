@@ -92,16 +92,16 @@ def get_simulation_params(simulation_num):
     :output: the simulation parameters
     """
     simulations = [
-        {
-            'num_rounds': NUM_ROUNDS,
-            'phase_len': PHASE_LEN,
-            'num_arms': 6,
-            'num_users': 6,
-            'users_distribution': np.array([1/6, 1/6, 1/6, 1/6, 1/6, 1/6]),
-            'arms_thresh': np.array([0.1, 0.25, 0.4, 0.1, 0, 0]) * PHASE_LEN,
-            'ERM': np.array([[0.5, 0, 0.2, 0, 0.4, 0], [0, 0.5, 0, 0.5, 0, 0.5], [1, 0, 0, 0, 0, 0],
-                             [0.2, 0.2, 0.3, 0.4, 0.7, 0.9], [0.3, 0.9, 0, 0.4, 0.7, 0.9], [0, 0, 0, 0, 1, 0]])
-        },
+        # {
+        #     'num_rounds': NUM_ROUNDS,
+        #     'phase_len': PHASE_LEN,
+        #     'num_arms': 6,
+        #     'num_users': 6,
+        #     'users_distribution': np.array([1/6, 1/6, 1/6, 1/6, 1/6, 1/6]),
+        #     'arms_thresh': np.array([0.1, 0.25, 0.4, 0.1, 0, 0]) * PHASE_LEN,
+        #     'ERM': np.array([[0.5, 0, 0.2, 0, 0.4, 0], [0, 0.5, 0, 0.5, 0, 0.5], [1, 0, 0, 0, 0, 0],
+        #                      [0.2, 0.2, 0.3, 0.4, 0.7, 0.9], [0.3, 0.9, 0, 0.4, 0.7, 0.9], [0, 0, 0, 0, 1, 0]])
+        # },
         {
             'num_rounds': NUM_ROUNDS,
             'phase_len': PHASE_LEN,

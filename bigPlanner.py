@@ -50,9 +50,11 @@ class Planner:
         max_arm = -1
         for arm in range(self.num_arms):
             if arm not in self.inactive and arm in arms_arr:
-                UCB = self.users_dict[self.last_user][arm][AVG]
-                UCB += np.sqrt(2 * np.log(self.num_rounds * self.users_distribution[self.last_user]) /
-                               self.users_dict[self.last_user][arm][CNT_TOTAL])
+                UCB = 0
+                if self.users_dict[self.last_user][arm][CNT_TOTAL] > 0:
+                    UCB = self.users_dict[self.last_user][arm][AVG]
+                    UCB += np.sqrt(2 * np.log(self.num_rounds * self.users_distribution[self.last_user]) /
+                                   self.users_dict[self.last_user][arm][CNT_TOTAL])
                 if UCB > max_UCB:
                     max_UCB = UCB
                     max_arm = arm
@@ -68,16 +70,16 @@ class Planner:
         arm_to_return = None
         self.last_user = user_context
 
-        unexplored_arm = self.next_arm_to_explore()
-        if unexplored_arm != EXPLORED_ALL_ARMS:
-            self.last_arm = unexplored_arm
+        arm_at_risk = self.check_risk_deactivation()
+        if arm_at_risk != EXPLORED_ALL_ARMS:
+            self.last_arm = arm_at_risk
             self.arms_phases[self.last_arm][CNT_TOTAL] += 1
             self.users_dict[self.last_user][self.last_arm][CNT_TOTAL] += 1
             arm_to_return = self.last_arm
         else:
-            arm_at_risk = self.check_risk_deactivation()
-            if arm_at_risk != EXPLORED_ALL_ARMS:
-                self.last_arm = arm_at_risk
+            unexplored_arm = self.next_arm_to_explore()
+            if unexplored_arm != EXPLORED_ALL_ARMS:
+                self.last_arm = unexplored_arm
                 self.arms_phases[self.last_arm][CNT_TOTAL] += 1
                 self.users_dict[self.last_user][self.last_arm][CNT_TOTAL] += 1
                 arm_to_return = self.last_arm
@@ -189,7 +191,10 @@ class Planner:
         """
         numerator = TIME_CAP - self.avg_iteration_speed * self.num_rounds
         denominator = 2**self.num_arms * self.avg_iteration_speed
-        return numerator/denominator
+        if numerator > 0:
+            return numerator/denominator * 0.75
+        else:
+            return self.end_exploration_round
 
 
     def get_simulations_params(self):
