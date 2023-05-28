@@ -37,8 +37,8 @@ class Planner:
         self.last_arm = None
         self.last_user = None
         self.inactive = []
-        self.end_exploration_round = np.floor((self.num_rounds/self.num_arms)**(2/3) * (np.log(self.num_rounds)**(1/3))
-                                              * self.num_users)
+        self.end_exploration_round = np.floor((self.num_rounds/self.num_arms)**(2/3) * (np.log(self.num_rounds)**(1/3)))
+        self.avg_iteration_speed = time.time()
 
 
     def UCB(self, arms_arr):
@@ -99,6 +99,7 @@ class Planner:
         if self.current_round % self.phase_len == 0:
             self.deactivation()
         if self.current_round == self.end_exploration_round:
+            self.avg_iteration_speed = (time.time() - self.avg_iteration_speed) / self.end_exploration_round
             best_subset = self.run_simulations()
             for arm in range(self.num_arms):
                 if arm not in best_subset:
@@ -182,6 +183,15 @@ class Planner:
         return maxSubset
 
 
+    def get_simulation_length(self):
+        """
+        :return: the optimal amount of rounds each simulation should have
+        """
+        numerator = TIME_CAP - self.avg_iteration_speed * self.num_rounds
+        denominator = 2**self.num_arms * self.avg_iteration_speed
+        return numerator/denominator
+
+
     def get_simulations_params(self):
         simulations_array = []
 
@@ -208,7 +218,7 @@ class Planner:
                 expectations.append(user_expectations)
 
             simulations_array.append({
-                'num_rounds': int(self.end_exploration_round),
+                'num_rounds': int(self.get_simulation_length()),
                 'phase_len': self.phase_len,
                 'num_arms': len(combinations_list[comb]),
                 'num_users': self.num_users,
