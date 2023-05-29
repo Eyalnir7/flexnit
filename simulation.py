@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import time
-from bigPlanner import Planner
+from id_213950496_325161669 import Planner
 
 NUM_ROUNDS = 10 ** 6
 PHASE_LEN = 10 ** 2
@@ -48,17 +48,15 @@ class MABSimulation:
         else:
             return np.random.uniform(0, 2 * self.ERM[sampled_user][chosen_arm])
 
-    def deactivate_arms(self, round):
+    def deactivate_arms(self):
         """
         this function is called at the end of each phase and deactivates arms that havn't gotten enough exposure
         (deactivated arm == arm that has departed)
         """
         for arm in range(self.num_arms):
             if self.exposure_list[arm] < self.arms_thresh[arm]:
-                if arm not in self.inactive_arms:
-                    print("\n arm " + str(arm) + " is deactivated! in round " + str(round))
-                    self.inactive_arms.add(arm)
-                    print(self.inactive_arms)
+                if arm not in self.inactive_arms: print("\n arm " + str(arm) + " is deactivated!")
+                self.inactive_arms.add(arm)
         self.exposure_list = np.zeros(self.num_arms)  # initiate the exposure list for the next phase.
 
     def simulation(self, planner, with_deactivation=True):
@@ -77,7 +75,7 @@ class MABSimulation:
             self.exposure_list[chosen_arm] += 1
 
             if (i + 1) % self.phase_len == 0 and with_deactivation:  # satisfied only when it is the end of the phase
-                self.deactivate_arms(i+1)
+                self.deactivate_arms()
 
         if time.time() - begin_time > TIME_CAP:
             print("the planner operation is too slow")
@@ -92,16 +90,6 @@ def get_simulation_params(simulation_num):
     :output: the simulation parameters
     """
     simulations = [
-        # {
-        #     'num_rounds': NUM_ROUNDS,
-        #     'phase_len': PHASE_LEN,
-        #     'num_arms': 6,
-        #     'num_users': 6,
-        #     'users_distribution': np.array([1/6, 1/6, 1/6, 1/6, 1/6, 1/6]),
-        #     'arms_thresh': np.array([0.1, 0.25, 0.4, 0.1, 0, 0]) * PHASE_LEN,
-        #     'ERM': np.array([[0.5, 0, 0.2, 0, 0.4, 0], [0, 0.5, 0, 0.5, 0, 0.5], [1, 0, 0, 0, 0, 0],
-        #                      [0.2, 0.2, 0.3, 0.4, 0.7, 0.9], [0.3, 0.9, 0, 0.4, 0.7, 0.9], [0, 0, 0, 0, 1, 0]])
-        # },
         {
             'num_rounds': NUM_ROUNDS,
             'phase_len': PHASE_LEN,
@@ -146,7 +134,40 @@ def get_simulation_params(simulation_num):
             'users_distribution': np.array([0.6, 0.4]),
             'arms_thresh': np.array([0, 0.4, 0.4]) * PHASE_LEN,
             'ERM': np.array([[0.5, 0, 0], [0, (1 + (4 * (NUM_ROUNDS ** (-1 / 3)))) / 2, 1 / 2]])
+        },
+
+        {
+            'num_rounds': NUM_ROUNDS,
+            'phase_len': PHASE_LEN,
+            'num_arms': 5,
+            'num_users': 3,
+            'users_distribution': np.array([0.6, 0.1, 0.3]),
+            'arms_thresh': np.array([0, 0.2, 0.1, 0.3, 0]) * PHASE_LEN,
+            'ERM': np.array([[0.5, 0, 0,0.7,0.3], [0, (1 + (4 * (NUM_ROUNDS ** (-1 / 3)))) / 2, 0.5, 0.8,0.1],
+                             [0, 0, 0, 0.1,0.6]])
+        },
+        {
+            'num_rounds': NUM_ROUNDS,
+            'phase_len': PHASE_LEN,
+            'num_arms': 3,
+            'num_users': 5,
+            'users_distribution': np.array([0.4, 0.1, 0.3,0.05,0.15]),
+            'arms_thresh': np.array([0, 0.5, 0.1]) * PHASE_LEN,
+            'ERM': np.array([[0.5, 0, 0], [0, 0.8, 0.1],
+                             [0, 0.02, 0.5], [0.5, 0, 0],[0, 0.5, 0]])
+        },
+        {
+            'num_rounds': NUM_ROUNDS,
+            'phase_len': PHASE_LEN,
+            'num_arms': 6,
+            'num_users': 6,
+            'users_distribution': np.array([0.3, 0.1, 0.3, 0.05, 0.15, 0.1]),
+            'arms_thresh': np.array([0, 0.3, 0.1, 0.2, 0.1, 0.1]) * PHASE_LEN,
+            'ERM': np.array([[0.5, 0, 0, 0.5, 0, 0], [0, 0.8, 0.1, 0, 0, 0.2],
+                             [0, 0.02, 0.5, 0.7, 0, 0], [0.5, 0, 0, 0, 0, 0.5],
+                             [0, 0, 0.8, 0, 0.3, 0], [0, 0.2, 0.2, 0.2, 0.2, 0]])
         }
+
     ]
     return simulations[simulation_num]
 
@@ -170,9 +191,13 @@ def run_simulation(simulation_num):
 
 
 def main():
-    for sim_num in range(5):
-        reward = run_simulation(sim_num)
+    sum = 0
+    for i in range(5,8):
+        reward = run_simulation(i)
+        sum += reward
         print("The total reward of your planner is " + str(reward))
+
+    print("the average is:" + str(sum/5))
 
 
 if __name__ == '__main__':
